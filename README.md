@@ -43,8 +43,7 @@ A full-stack web application built with React, Express, and TypeScript, featurin
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
-cd rest-express
+git clone https://github.com/APJishnu/Media-Manager.git
 ```
 
 2. Install dependencies:
