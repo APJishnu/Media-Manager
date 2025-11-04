@@ -132,12 +132,16 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
+  /* Primary Background: #0f0f0f (6% lightness) */
   --background: 0 0% 6%;
 
+  /* Text Primary: #f5f5f5 (96% lightness) */
   --foreground: 0 0% 96%;
 
-  --border: 0 0% 16%;
+  /* Border Color: #2d2d2d (18% lightness) */
+  --border: 0 0% 18%;
 
+  /* Secondary Background: #1a1a1a (10% lightness) - for cards, modals */
   --card: 0 0% 10%;
 
   --card-foreground: 0 0% 96%;
@@ -150,6 +154,7 @@
 
   --sidebar-border: 0 0% 12%;
 
+  /* Accent Color: #3b82f6 (blue-500) */
   --sidebar-primary: 217 91% 60%;
 
   --sidebar-primary-foreground: 0 0% 98%;
@@ -166,6 +171,7 @@
 
   --popover-border: 0 0% 16%;
 
+  /* Accent Color: #3b82f6 (blue-500) */
   --primary: 217 91% 60%;
 
   --primary-foreground: 0 0% 98%;
@@ -176,12 +182,14 @@
 
   --muted: 217 8% 14%;
 
-  --muted-foreground: 217 8% 65%;
+  /* Text Secondary: #a3a3a3 (64% lightness) */
+  --muted-foreground: 0 0% 64%;
 
   --accent: 217 12% 15%;
 
   --accent-foreground: 217 12% 80%;
 
+  /* Error: #ef4444 */
   --destructive: 0 84% 60%;
 
   --destructive-foreground: 0 0% 98%;
@@ -189,9 +197,11 @@
   --input: 0 0% 28%;
   --ring: 217 91% 60%;
   --chart-1: 217 91% 65%;
-  --chart-2: 173 58% 50%;
+  /* Success: #10b981 */
+  --chart-2: 160 84% 39%;
   --chart-3: 262 83% 68%;
-  --chart-4: 43 96% 60%;
+  /* Warning: #f59e0b */
+  --chart-4: 38 92% 50%;
   --chart-5: 27 87% 70%;
 
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.3);
