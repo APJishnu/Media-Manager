@@ -1,0 +1,921 @@
+Frontend Prompt (React + Vite + TypeScript)
+markdownCreate a modern movie/TV show management application using React + Vite + TypeScript with the following specifications:
+
+## Tech Stack
+- React 18 with TypeScript
+- Vite as build tool
+- TailwindCSS for styling
+- Shadcn UI component library
+- Yup for form validation
+- Axios for API calls
+- React Hooks for state management
+
+## Project Structure
+
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── Header.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   └── MainLayout.tsx
+│   │   └── ui/
+│   │       ├── Button.tsx
+│   │       ├── Input.tsx
+│   │       ├── Modal.tsx
+│   │       ├── Table.tsx
+│   │       ├── Form.tsx
+│   │       ├── LoadingSkeleton.tsx
+│   │       └── ConfirmDialog.tsx
+│   ├── modules/
+│   │   └── movies/
+│   │       ├── components/
+│   │       │   ├── MovieForm.tsx
+│   │       │   ├── MovieTable.tsx
+│   │       │   ├── MovieTableRow.tsx
+│   │       │   └── EmptyState.tsx
+│   │       ├── services/
+│   │       │   └── movieService.ts
+│   │       ├── hooks/
+│   │       │   └── useInfiniteScroll.ts
+│   │       └── views/
+│   │           └── MoviesView.tsx
+│   ├── themes/
+│   │   ├── styles/
+│   │   │   ├── global.scss
+│   │   │   └── variables.scss
+│   │   └── assets/
+│   │       └── images/
+│   ├── utils/
+│   │   ├── http.ts
+│   │   └── toast.ts
+│   ├── types/
+│   │   └── index.ts
+│   ├── App.tsx
+│   └── main.tsx
+├── .env
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+└── tailwind.config.js
+
+
+## Core Features
+
+### 1. Infinite Scroll Movie Table
+- *Columns*: Title, Type, Director, Budget, Location, Duration, Year/Time, Actions (Edit/Delete)
+- Implement infinite scroll using Intersection Observer API
+- Load 10 items per page initially, fetch more on scroll
+- Show loading skeleton during data fetch
+- Smooth scroll animations
+- Empty state when no movies exist
+
+### 2. Add/Edit Movie Modal
+- Beautiful modal with smooth animations
+- Form fields with Yup validation:
+  - *title*: required, string, min 2 characters
+  - *type*: required, dropdown (Movie | TV Show)
+  - *director*: required, string
+  - *budget*: required, string (e.g., "$5M")
+  - *location*: required, string
+  - *duration*: required, string (e.g., "120 min")
+  - *yearTime*: required, string (e.g., "2024")
+- Show inline validation errors
+- Disable submit button during API call
+- Show success toast on completion
+- Close modal automatically after success
+
+### 3. Delete Confirmation Dialog
+- Elegant confirmation dialog using Shadcn AlertDialog
+- Display movie title in confirmation message
+- Show loading state during deletion
+- Success/error toast notifications
+
+### 4. Movie Service Layer (movieService.ts)
+typescript
+import axiosInstance from '@/utils/http';
+
+interface Movie {
+  id: string;
+  title: string;
+  type: 'Movie' | 'TV Show';
+  director: string;
+  budget: string;
+  location: string;
+  duration: string;
+  yearTime: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface PaginatedResponse {
+  status: boolean;
+  data: Movie[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+export const movieService = {
+  getAllMovies: (page: number, limit: number) => 
+    axiosInstance.get(`/movies?page=${page}&limit=${limit}`),
+  
+  createMovie: (data: Omit) =>
+    axiosInstance.post('/movies', data),
+  
+  updateMovie: (id: string, data: Partial) =>
+    axiosInstance.put(`/movies/${id}`, data),
+  
+  deleteMovie: (id: string) =>
+    axiosInstance.delete(`/movies/${id}`)
+};
+
+
+## Design Requirements
+
+### Color Scheme (Modern Dark Theme inspired by bolt.new)
+- *Primary Background*: #0f0f0f (dark)
+- *Secondary Background*: #1a1a1a (cards, modals)
+- *Accent Color*: #3b82f6 (blue-500)
+- *Text Primary*: #f5f5f5
+- *Text Secondary*: #a3a3a3
+- *Border Color*: #2d2d2d
+- *Success*: #10b981
+- *Error*: #ef4444
+- *Warning*: #f59e0b
+
+### UI/UX Features
+- Smooth fade-in animations for modals and dialogs
+- Hover effects on table rows and buttons
+- Loading skeletons with shimmer effect
+- Responsive design (mobile-first approach)
+- Modern glassmorphism effects on cards
+- Subtle shadows and borders
+- Rounded corners (border-radius: 12px)
+- Typography: Inter or Geist font family
+
+### Responsive Breakpoints
+- Mobile: < 640px (stack form fields, adjust table)
+- Tablet: 640px - 1024px (2-column forms)
+- Desktop: > 1024px (full layout)
+
+## TypeScript Types (types/index.ts)
+typescript
+export interface Movie {
+  id: string;
+  title: string;
+  type: 'Movie' | 'TV Show';
+  director: string;
+  budget: string;
+  location: string;
+  duration: string;
+  yearTime: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiResponse {
+  status: boolean;
+  message?: string;
+  data: T;
+  errors?: Record;
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+}
+
+
+## Axios Configuration (utils/http.ts)
+typescript
+import axios from 'axios';
+
+const axiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // Add auth token if needed
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor
+axiosInstance.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    const message = error.response?.data?.message || 'Something went wrong';
+    return Promise.reject({ message, status: error.response?.status });
+  }
+);
+
+export default axiosInstance;
+
+
+## Environment Variables (.env)
+
+VITE_API_BASE_URL=http://localhost:5000/api
+
+
+## Key Implementation Details
+
+### Infinite Scroll Hook (useInfiniteScroll.ts)
+- Use Intersection Observer API
+- Trigger load when user reaches bottom sentinel element
+- Handle loading states properly
+- Prevent multiple simultaneous requests
+- Reset state when component unmounts
+
+### Form Validation with Yup
+typescript
+import * as yup from 'yup';
+
+export const movieSchema = yup.object({
+  title: yup.string().required('Title is required').min(2, 'Title must be at least 2 characters'),
+  type: yup.string().oneOf(['Movie', 'TV Show'], 'Invalid type').required('Type is required'),
+  director: yup.string().required('Director is required'),
+  budget: yup.string().required('Budget is required'),
+  location: yup.string().required('Location is required'),
+  duration: yup.string().required('Duration is required'),
+  yearTime: yup.string().required('Year/Time is required'),
+});
+
+
+### Performance Optimizations
+- Use React.memo for MovieTableRow to prevent unnecessary re-renders
+- Debounce scroll events (300ms)
+- Lazy load images if movie posters are added
+- Use useCallback for event handlers
+- Virtualize long lists if needed (react-virtual)
+
+### Accessibility
+- Proper ARIA labels on all interactive elements
+- Keyboard navigation support (Tab, Enter, Escape)
+- Focus management in modals
+- Semantic HTML elements
+- Screen reader friendly error messages
+
+## Additional Features
+- Toast notifications for success/error messages (use react-hot-toast or sonner)
+- Loading states with elegant spinners
+- Error boundaries for graceful error handling
+- Optimistic UI updates (show changes immediately, rollback on error)
+- Confirmation before leaving page with unsaved changes
+
+## Package.json Scripts
+json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx"
+  }
+}
+
+
+Generate complete, production-ready code with:
+- All components fully implemented
+- Proper TypeScript types throughout
+- Beautiful, modern UI with animations
+- Robust error handling
+- Excellent user experience
+- Clean, maintainable code structure
+
+🎬 Backend Prompt (Node.js + Express + MySQL + Prisma)
+markdownCreate a production-ready REST API for movie/TV show management using Node.js + Express + MySQL + Prisma with the following specifications:
+
+## Tech Stack
+- Node.js 18+ with ES6 modules
+- Express.js framework
+- MySQL database
+- Prisma ORM
+- Joi for validation (NOT TypeScript, use JavaScript)
+- CORS enabled
+- Environment-based configuration
+
+## Project Structure
+
+backend/
+├── src/
+│   ├── config/
+│   │   ├── database.js
+│   │   └── cors.js
+│   ├── controllers/
+│   │   └── MovieController.js (class-based)
+│   ├── repositories/
+│   │   └── MovieRepository.js (class-based)
+│   ├── middlewares/
+│   │   ├── errorHandler.js
+│   │   ├── validator.js
+│   │   ├── asyncHandler.js
+│   │   └── notFound.js
+│   ├── requests/
+│   │   └── movieRequest.js (Joi schemas)
+│   ├── responses/
+│   │   └── apiResponse.js
+│   ├── routes/
+│   │   ├── index.js
+│   │   └── movieRoutes.js
+│   ├── utils/
+│   │   ├── AppError.js
+│   │   └── pagination.js
+│   └── server.js
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+├── .env
+├── .env.example
+├── package.json
+└── README.md
+
+
+## Database Schema (Prisma)
+
+*prisma/schema.prisma:*
+prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Movie {
+  id        String   @id @default(uuid())
+  title     String   @db.VarChar(255)
+  type      String   @db.VarChar(50)
+  director  String   @db.VarChar(255)
+  budget    String   @db.VarChar(100)
+  location  String   @db.VarChar(255)
+  duration  String   @db.VarChar(50)
+  yearTime  String   @db.VarChar(50)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("movies")
+  @@index([title])
+  @@index([type])
+}
+
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/movies?page=1&limit=10 | Get paginated movies |
+| POST | /api/movies | Create new movie |
+| GET | /api/movies/:id | Get single movie by ID |
+| PUT | /api/movies/:id | Update movie |
+| DELETE | /api/movies/:id | Delete movie |
+
+## Joi Validation Schemas (requests/movieRequest.js)
+javascript
+import Joi from 'joi';
+
+export const createMovieSchema = Joi.object({
+  title: Joi.string().min(2).max(255).required().messages({
+    'string.empty': 'Title is required',
+    'string.min': 'Title must be at least 2 characters',
+  }),
+  type: Joi.string().valid('Movie', 'TV Show').required().messages({
+    'any.only': 'Type must be either Movie or TV Show',
+    'string.empty': 'Type is required',
+  }),
+  director: Joi.string().required().messages({
+    'string.empty': 'Director is required',
+  }),
+  budget: Joi.string().required().messages({
+    'string.empty': 'Budget is required',
+  }),
+  location: Joi.string().required().messages({
+    'string.empty': 'Location is required',
+  }),
+  duration: Joi.string().required().messages({
+    'string.empty': 'Duration is required',
+  }),
+  yearTime: Joi.string().required().messages({
+    'string.empty': 'Year/Time is required',
+  }),
+});
+
+export const updateMovieSchema = Joi.object({
+  title: Joi.string().min(2).max(255),
+  type: Joi.string().valid('Movie', 'TV Show'),
+  director: Joi.string(),
+  budget: Joi.string(),
+  location: Joi.string(),
+  duration: Joi.string(),
+  yearTime: Joi.string(),
+}).min(1); // At least one field must be present
+
+export const paginationSchema = Joi.object({
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
+});
+
+export const idParamSchema = Joi.object({
+  id: Joi.string().uuid().required().messages({
+    'string.guid': 'Invalid movie ID format',
+  }),
+});
+
+
+## Controller (controllers/MovieController.js)
+javascript
+import { ResponseHandler } from '../responses/apiResponse.js';
+import { AppError } from '../utils/AppError.js';
+import { calculatePagination } from '../utils/pagination.js';
+
+export class MovieController {
+  constructor(movieRepository) {
+    this.movieRepository = movieRepository;
+  }
+
+  // GET /api/movies?page=1&limit=10
+  getAll = async (req, res, next) => {
+    const { page, limit } = req.query;
+    
+    const [movies, total] = await Promise.all([
+      this.movieRepository.findAll(parseInt(page), parseInt(limit)),
+      this.movieRepository.count()
+    ]);
+
+    const pagination = calculatePagination(parseInt(page), parseInt(limit), total);
+
+    return ResponseHandler.success(
+      res,
+      movies,
+      'Movies retrieved successfully',
+      pagination
+    );
+  };
+
+  // POST /api/movies
+  create = async (req, res, next) => {
+    const movieData = req.body;
+    const movie = await this.movieRepository.create(movieData);
+    
+    return ResponseHandler.created(
+      res,
+      movie,
+      'Movie created successfully'
+    );
+  };
+
+  // GET /api/movies/:id
+  getById = async (req, res, next) => {
+    const { id } = req.params;
+    const movie = await this.movieRepository.findById(id);
+
+    if (!movie) {
+      throw new AppError('Movie not found', 404, 'MOVIE_NOT_FOUND');
+    }
+
+    return ResponseHandler.success(res, movie, 'Movie retrieved successfully');
+  };
+
+  // PUT /api/movies/:id
+  update = async (req, res, next) => {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    const existingMovie = await this.movieRepository.findById(id);
+    if (!existingMovie) {
+      throw new AppError('Movie not found', 404, 'MOVIE_NOT_FOUND');
+    }
+
+    const updatedMovie = await this.movieRepository.update(id, updateData);
+
+    return ResponseHandler.success(
+      res,
+      updatedMovie,
+      'Movie updated successfully'
+    );
+  };
+
+  // DELETE /api/movies/:id
+  delete = async (req, res, next) => {
+    const { id } = req.params;
+
+    const existingMovie = await this.movieRepository.findById(id);
+    if (!existingMovie) {
+      throw new AppError('Movie not found', 404, 'MOVIE_NOT_FOUND');
+    }
+
+    await this.movieRepository.delete(id);
+
+    return ResponseHandler.success(
+      res,
+      null,
+      'Movie deleted successfully'
+    );
+  };
+}
+
+
+## Repository (repositories/MovieRepository.js)
+javascript
+export class MovieRepository {
+  constructor(prisma) {
+    this.prisma = prisma;
+  }
+
+  async findAll(page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    
+    return await this.prisma.movie.findMany({
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+  }
+
+  async findById(id) {
+    return await this.prisma.movie.findUnique({
+      where: { id }
+    });
+  }
+
+  async create(data) {
+    return await this.prisma.movie.create({
+      data
+    });
+  }
+
+  async update(id, data) {
+    return await this.prisma.movie.update({
+      where: { id },
+      data
+    });
+  }
+
+  async delete(id) {
+    return await this.prisma.movie.delete({
+      where: { id }
+    });
+  }
+
+  async count() {
+    return await this.prisma.movie.count();
+  }
+}
+
+
+## Response Handler (responses/apiResponse.js)
+javascript
+export class ResponseHandler {
+  static success(res, data = null, message = 'Success', pagination = null) {
+    const response = {
+      status: true,
+      message,
+      data
+    };
+
+    if (pagination) {
+      response.pagination = pagination;
+    }
+
+    return res.status(200).json(response);
+  }
+
+  static created(res, data, message = 'Created successfully') {
+    return res.status(201).json({
+      status: true,
+      message,
+      data
+    });
+  }
+
+  static error(res, message = 'Error occurred', code = 'ERROR', errors = null, statusCode = 500) {
+    const response = {
+      status: false,
+      message,
+      code
+    };
+
+    if (errors) {
+      response.errors = errors;
+    }
+
+    return res.status(statusCode).json(response);
+  }
+
+  static notFound(res, message = 'Resource not found') {
+    return res.status(404).json({
+      status: false,
+      message,
+      code: 'NOT_FOUND'
+    });
+  }
+}
+
+
+## Middleware Implementation
+
+### validator.js
+javascript
+export const validate = (schema, property = 'body') => {
+  return (req, res, next) => {
+    const { error, value } = schema.validate(req[property], {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      const errors = error.details.reduce((acc, curr) => {
+        acc[curr.path[0]] = curr.message;
+        return acc;
+      }, {});
+
+      return ResponseHandler.error(
+        res,
+        'Validation failed',
+        'VALIDATION_ERROR',
+        errors,
+        400
+      );
+    }
+
+    req[property] = value;
+    next();
+  };
+};
+
+
+### errorHandler.js
+javascript
+export const errorHandler = (err, req, res, next) => {
+  console.error('Error:', err);
+
+  if (err.name === 'AppError') {
+    return ResponseHandler.error(
+      res,
+      err.message,
+      err.code,
+      null,
+      err.statusCode
+    );
+  }
+
+  // Prisma errors
+  if (err.code === 'P2002') {
+    return ResponseHandler.error(
+      res,
+      'Duplicate entry found',
+      'DUPLICATE_ENTRY',
+      null,
+      409
+    );
+  }
+
+  if (err.code === 'P2025') {
+    return ResponseHandler.error(
+      res,
+      'Record not found',
+      'NOT_FOUND',
+      null,
+      404
+    );
+  }
+
+  // Default error
+  return ResponseHandler.error(
+    res,
+    'Internal server error',
+    'INTERNAL_ERROR',
+    null,
+    500
+  );
+};
+
+
+### asyncHandler.js
+javascript
+export const asyncHandler = (fn) => {
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+};
+
+
+## Utilities
+
+### AppError.js
+javascript
+export class AppError extends Error {
+  constructor(message, statusCode = 500, code = 'ERROR') {
+    super(message);
+    this.statusCode = statusCode;
+    this.code = code;
+    this.name = 'AppError';
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+
+### pagination.js
+javascript
+export const calculatePagination = (page, limit, total) => {
+  const pages = Math.ceil(total / limit);
+  
+  return {
+    page,
+    limit,
+    total,
+    pages,
+    hasNext: page < pages,
+    hasPrev: page > 1
+  };
+};
+
+
+## Routes Setup
+
+### routes/movieRoutes.js
+javascript
+import express from 'express';
+import { MovieController } from '../controllers/MovieController.js';
+import { MovieRepository } from '../repositories/MovieRepository.js';
+import { prisma } from '../config/database.js';
+import { asyncHandler } from '../middlewares/asyncHandler.js';
+import { validate } from '../middlewares/validator.js';
+import {
+  createMovieSchema,
+  updateMovieSchema,
+  paginationSchema,
+  idParamSchema
+} from '../requests/movieRequest.js';
+
+const router = express.Router();
+const movieRepository = new MovieRepository(prisma);
+const movieController = new MovieController(movieRepository);
+
+router.get(
+  '/',
+  validate(paginationSchema, 'query'),
+  asyncHandler(movieController.getAll)
+);
+
+router.post(
+  '/',
+  validate(createMovieSchema),
+  asyncHandler(movieController.create)
+);
+
+router.get(
+  '/:id',
+  validate(idParamSchema, 'params'),
+  asyncHandler(movieController.getById)
+);
+
+router.put(
+  '/:id',
+  validate(idParamSchema, 'params'),
+  validate(updateMovieSchema),
+  asyncHandler(movieController.update)
+);
+
+router.delete(
+  '/:id',
+  validate(idParamSchema, 'params'),
+  asyncHandler(movieController.delete)
+);
+
+export default router;
+
+
+### routes/index.js
+javascript
+import express from 'express';
+import movieRoutes from './movieRoutes.js';
+
+const router = express.Router();
+
+router.use('/movies', movieRoutes);
+
+export default router;
+
+
+## Server Setup (server.js)
+javascript
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import routes from './routes/index.js';
+import { errorHandler } from './middlewares/errorHandler.js';
+import { prisma } from './config/database.js';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api', routes);
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    status: false,
+    message: 'Route not found',
+    code: 'NOT_FOUND'
+  });
+});
+
+// Error handler (must be last)
+app.use(errorHandler);
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+
+## Environment Variables (.env)
+
+DATABASE_URL="mysql://root:password@localhost:3306/movies_db"
+PORT=5000
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:5173
+
+
+## Package.json
+json
+{
+  "name": "movie-management-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "joi": "^17.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "prisma": "^5.7.0"
+  }
+}
+
+
+## Prisma Commands
+bash
+# Generate Prisma Client
+npm run prisma:generate
+
+# Create migration
+npm run prisma:migrate
+
+# Open Prisma Studio
+npm run prisma:studio
+
+
+Generate complete, production-ready backend code with:
+- All files fully implemented in JavaScript (ES6 modules)
+- Proper error handling throughout
+- Clean architecture with separation of concerns
+- Joi validation for all inputs
+- Standardized API responses
+- Database connection management
+- CORS configuration
+- Environment-based configuration
